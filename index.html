@@ -1,375 +1,765 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Padel Americano</title>
-  <style>
-    :root {
-      --bg:         #0a1628;
-      --surface:    #132238;
-      --surface2:   #1a2e45;
-      --border:     #243d5c;
-      --text:       #e2e8f0;
-      --muted:      #64748b;
-      --accent:     #22c55e;
-      --accent-dim: rgba(34,197,94,.12);
-      --gold:       #fbbf24;
-      --silver:     #9ca3af;
-      --bronze:     #cd7f32;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Padel Koty</title>
+<style>
+:root {
+  --bg:         #0a1628;
+  --surface:    #132238;
+  --surface2:   #1a2e45;
+  --border:     #243d5c;
+  --text:       #e2e8f0;
+  --muted:      #64748b;
+  --accent:     #c8f135;
+  --accent-dim: rgba(200,241,53,.1);
+  --red:        #ef4444;
+  --red-dim:    rgba(239,68,68,.12);
+  --gold:       #fbbf24;
+  --silver:     #9ca3af;
+  --bronze:     #cd7f32;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; padding-bottom: 60px;
+}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Screens ── */
+.screen { display: none; max-width: 580px; margin: 0 auto; padding: 28px 16px; }
+.screen.active { display: block; animation: fadeUp .22s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 28px 16px 48px;
-    }
+/* ── Topbar ── */
+.topbar { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+.back-btn {
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text); padding: 8px 14px; border-radius: 8px;
+  font-size: .875rem; font-weight: 600; cursor: pointer; flex-shrink:0;
+}
+.back-btn:hover { filter: brightness(1.1); }
+.topbar-title { font-size: 1.1rem; font-weight: 700; flex:1; }
 
-    /* ─── Screens ─────────────────────────────────────── */
-    .screen { display: none; max-width: 560px; margin: 0 auto; }
-    .screen.active { display: block; animation: up .25s ease; }
-    @keyframes up {
-      from { opacity:0; transform:translateY(10px) }
-      to   { opacity:1; transform:translateY(0)     }
-    }
+/* ── App title ── */
+.app-title {
+  text-align:center; font-size:2.2rem; font-weight:900;
+  color: var(--accent); letter-spacing:-.03em; margin-bottom:4px;
+}
+.app-sub { text-align:center; color:var(--muted); font-size:.875rem; margin-bottom:32px; }
 
-    /* ─── Typography ──────────────────────────────────── */
-    .app-title {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -.02em;
-      margin-bottom: 4px;
-    }
-    .app-sub {
-      text-align: center;
-      color: var(--muted);
-      font-size: .875rem;
-      margin-bottom: 32px;
-    }
+/* ── Section header ── */
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.section-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
 
-    /* ─── Inputs ──────────────────────────────────────── */
-    .players-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-    .inp-group { display: flex; flex-direction: column; gap: 5px; }
-    .inp-label {
-      font-size: .68rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-    .txt-inp {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: .95rem;
-      width: 100%;
-      transition: border-color .18s, box-shadow .18s;
-    }
-    .txt-inp::placeholder { color: var(--muted); }
-    .txt-inp:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-dim);
-    }
+/* ── Buttons ── */
+.btn {
+  display:block; width:100%; padding:14px 20px; border:none; border-radius:10px;
+  font-size:.975rem; font-weight:700; cursor:pointer;
+  transition:transform .1s, filter .15s; text-align:center;
+}
+.btn:hover  { filter: brightness(1.07); }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--accent); color: #0a1628; }
+.btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-danger  { background: var(--red); color: #fff; }
+.btn-sm { display:inline-block; width:auto; padding:8px 16px; font-size:.82rem; font-weight:700; border-radius:8px; }
+.mt8  { margin-top:8px; }
+.mt12 { margin-top:12px; }
+.mt16 { margin-top:16px; }
+.mt24 { margin-top:24px; }
 
-    /* ─── Buttons ─────────────────────────────────────── */
-    .btn {
-      display: block; width: 100%;
-      padding: 15px 24px;
-      border: none; border-radius: 10px;
-      font-size: 1rem; font-weight: 700;
-      cursor: pointer;
-      transition: transform .1s, filter .15s;
-    }
-    .btn:hover  { filter: brightness(1.06); }
-    .btn:active { transform: scale(.98); }
-    .btn-primary  { background: var(--accent); color: #0a1628; }
-    .btn-outline  { background: transparent; color: var(--text);
-                    border: 1.5px solid var(--border); margin-top: 10px; }
+/* ── Home action buttons ── */
+.home-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-    /* ─── Round header ────────────────────────────────── */
-    .round-header { text-align: center; margin-bottom: 22px; }
-    .round-lbl {
-      font-size: .72rem; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--muted);
-    }
-    .round-num { font-size: 1.5rem; font-weight: 800; margin: 2px 0 10px; }
+/* ── Cards ── */
+.card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 10px;
+  cursor: pointer; transition: border-color .15s;
+}
+.card:hover { border-color: var(--accent); }
+.card-row { display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
+.card-meta  { font-size:.8rem; color:var(--muted); }
 
-    .progress-track {
-      width: 100%; height: 5px;
-      background: var(--surface2); border-radius: 99px; overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%; background: var(--accent);
-      border-radius: 99px; transition: width .4s ease;
-    }
+/* ── Badge ── */
+.badge {
+  display:inline-block; font-size:.65rem; font-weight:700;
+  padding:3px 9px; border-radius:99px; text-transform:uppercase; letter-spacing:.08em;
+}
+.badge-green { background:var(--accent-dim); color:var(--accent); }
+.badge-muted { background:var(--surface2); color:var(--muted); }
+.badge-red   { background:var(--red-dim); color:var(--red); }
 
-    /* ─── Court card ──────────────────────────────────── */
-    .court-card {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 18px 16px;
-      margin-bottom: 14px;
-    }
-    .court-badge {
-      display: inline-block;
-      font-size: .65rem; font-weight: 700;
-      color: var(--accent); text-transform: uppercase; letter-spacing: .12em;
-      background: var(--accent-dim);
-      padding: 3px 9px; border-radius: 99px; margin-bottom: 12px;
-    }
+/* ── Form inputs ── */
+.form-group { margin-bottom:16px; }
+.form-label { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; }
+.txt-inp, .sel-inp {
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  color:var(--text); padding:11px 13px; border-radius:9px; font-size:.95rem;
+  transition:border-color .15s, box-shadow .15s;
+}
+.txt-inp::placeholder { color:var(--muted); }
+.txt-inp:focus, .sel-inp:focus {
+  outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);
+}
+.sel-inp option { background:var(--surface2); }
 
-    /* Teams row */
-    .teams-row {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
-    }
-    .team-lbl {
-      flex: 1; font-size: .88rem; font-weight: 600;
-      line-height: 1.35; word-break: break-word;
-    }
-    .team-lbl.right { text-align: right; }
-    .vs-pill {
-      font-size: .65rem; font-weight: 700; color: var(--muted);
-      border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px;
-      flex-shrink: 0; white-space: nowrap;
-    }
+/* ── Player items ── */
+.player-item {
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:10px 14px; margin-bottom:8px;
+}
+.avatar {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:var(--accent-dim); color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.78rem; font-weight:800;
+}
+.player-name { flex:1; font-size:.95rem; font-weight:600; }
+.icon-btn {
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  font-size:1rem; padding:4px 8px; border-radius:6px;
+}
+.icon-btn:hover { color:var(--red); background:var(--red-dim); }
 
-    /* Score inputs */
-    .score-row { display: flex; align-items: flex-end; gap: 8px; }
-    .score-box  { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .score-cap  { font-size: .65rem; color: var(--muted); text-align: center; }
-    .score-inp {
-      width: 100%;
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      color: var(--text);
-      padding: 12px 6px;
-      border-radius: 8px;
-      font-size: 1.5rem; font-weight: 700; text-align: center;
-      -moz-appearance: textfield;
-      transition: border-color .18s, box-shadow .18s;
-    }
-    .score-inp::-webkit-outer-spin-button,
-    .score-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .score-inp:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-dim);
-    }
-    .score-inp:disabled {
-      color: var(--muted);
-      border-color: var(--surface2);
-      background: var(--surface);
-      cursor: default;
-    }
-    .score-sep {
-      font-size: 1.5rem; font-weight: 700; color: var(--muted);
-      padding-bottom: 10px; /* align with input center */
-      flex-shrink: 0;
-    }
+/* ── Player select checkboxes ── */
+.player-check-item {
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:10px 14px; margin-bottom:8px;
+  cursor:pointer; transition:border-color .15s, background .15s;
+}
+.player-check-item.selected { border-color:var(--accent); background:var(--accent-dim); }
+.check-icon { font-size:1.1rem; flex-shrink:0; }
 
-    /* Action area */
-    .action-area { margin-top: 24px; }
-    .inline-err {
-      background: #450a0a; color: #fca5a5;
-      border: 1px solid #7f1d1d; border-radius: 8px;
-      padding: 10px 14px; font-size: .875rem; font-weight: 600;
-      margin-bottom: 12px;
-    }
+/* ── Court card ── */
+.court-card {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:14px; padding:18px; margin-bottom:14px;
+}
+.court-badge {
+  display:inline-block; font-size:.65rem; font-weight:700;
+  color:var(--accent); text-transform:uppercase; letter-spacing:.12em;
+  background:var(--accent-dim); padding:3px 9px; border-radius:99px; margin-bottom:12px;
+}
+.teams-row { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.team-lbl { flex:1; font-size:.88rem; font-weight:600; line-height:1.4; }
+.team-lbl.right { text-align:right; }
+.vs-pill {
+  font-size:.65rem; font-weight:700; color:var(--muted);
+  border:1px solid var(--border); padding:2px 6px; border-radius:4px; flex-shrink:0;
+}
+.score-row { display:flex; align-items:flex-end; gap:8px; }
+.score-box { flex:1; display:flex; flex-direction:column; gap:4px; }
+.score-cap { font-size:.65rem; color:var(--muted); text-align:center; }
+.score-inp {
+  width:100%; background:var(--bg); border:1.5px solid var(--border);
+  color:var(--text); padding:12px 6px; border-radius:8px;
+  font-size:1.5rem; font-weight:700; text-align:center;
+  -moz-appearance:textfield; transition:border-color .15s, box-shadow .15s;
+}
+.score-inp::-webkit-outer-spin-button,
+.score-inp::-webkit-inner-spin-button { -webkit-appearance:none; }
+.score-inp:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim); }
+.score-inp:disabled { color:var(--muted); border-color:var(--surface2); background:var(--surface); cursor:default; }
+.score-sep { font-size:1.5rem; font-weight:700; color:var(--muted); padding-bottom:10px; flex-shrink:0; }
 
-    /* ─── Leaderboard ─────────────────────────────────── */
-    .results-top { text-align: center; margin-bottom: 26px; }
-    .trophy { font-size: 3rem; margin-bottom: 6px; }
+/* ── Resting bar ── */
+.resting-bar {
+  background:var(--surface2); border-radius:10px;
+  padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--muted);
+}
+.resting-bar strong { color:var(--text); }
 
-    .lb {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-      margin-bottom: 24px;
-    }
-    .lb-head {
-      display: grid; grid-template-columns: 46px 1fr auto;
-      padding: 10px 16px;
-      background: var(--surface2);
-      border-bottom: 1.5px solid var(--border);
-    }
-    .lb-head span {
-      font-size: .65rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
-    }
-    .lb-head span:last-child { text-align: right; }
+/* ── Round header ── */
+.round-header { text-align:center; margin-bottom:22px; }
+.round-lbl { font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.round-num { font-size:1.5rem; font-weight:800; margin:2px 0 10px; }
+.progress-track { width:100%; height:5px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+.progress-bar { height:100%; background:var(--accent); border-radius:99px; transition:width .4s ease; }
 
-    .lb-row {
-      display: grid; grid-template-columns: 46px 1fr auto;
-      align-items: center;
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .lb-row:last-child { border-bottom: none; }
-    .lb-row.r1 { background: rgba(251,191,36,.07); }
-    .lb-row.r2 { background: rgba(156,163,175,.05); }
-    .lb-row.r3 { background: rgba(205,127,50,.05); }
+/* ── Leaderboard ── */
+.lb { background:var(--surface); border:1.5px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+.lb-title { padding:12px 16px; background:var(--surface2); border-bottom:1.5px solid var(--border); font-size:.85rem; font-weight:700; }
+.lb-head {
+  display:grid; grid-template-columns:42px 1fr 36px 36px 50px 50px 56px;
+  padding:8px 14px; background:var(--surface2); border-bottom:1.5px solid var(--border);
+}
+.lb-head span { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); text-align:center; }
+.lb-head span:nth-child(2) { text-align:left; }
+.lb-row {
+  display:grid; grid-template-columns:42px 1fr 36px 36px 50px 50px 56px;
+  align-items:center; padding:11px 14px; border-bottom:1px solid var(--border);
+}
+.lb-row:last-child { border-bottom:none; }
+.lb-row.r1 { background:rgba(251,191,36,.07); }
+.lb-row.r2 { background:rgba(156,163,175,.05); }
+.lb-row.r3 { background:rgba(205,127,50,.05); }
+.lb-rank { font-size:.9rem; font-weight:700; color:var(--muted); text-align:center; }
+.lb-row.r1 .lb-rank { color:var(--gold); }
+.lb-row.r2 .lb-rank { color:var(--silver); }
+.lb-row.r3 .lb-rank { color:var(--bronze); }
+.lb-name { font-size:.9rem; font-weight:600; }
+.lb-cell { font-size:.88rem; font-weight:600; text-align:center; color:var(--muted); }
+.lb-pm { font-size:.9rem; font-weight:700; text-align:right; padding-right:4px; }
+.lb-pm.pos { color:var(--accent); }
+.lb-pm.neg { color:var(--red); }
+.lb-pm.zer { color:var(--muted); }
 
-    .lb-rank { font-size: .95rem; font-weight: 700; color: var(--muted); }
-    .lb-row.r1 .lb-rank { color: var(--gold); }
-    .lb-row.r2 .lb-rank { color: var(--silver); }
-    .lb-row.r3 .lb-rank { color: var(--bronze); }
+/* ── Inline error ── */
+.inline-err {
+  background:#450a0a; color:#fca5a5; border:1px solid #7f1d1d;
+  border-radius:8px; padding:10px 14px; font-size:.875rem; font-weight:600; margin-bottom:12px;
+}
 
-    .lb-name { font-size: .95rem; font-weight: 600; }
-    .lb-pts  { font-size: 1rem; font-weight: 700; color: var(--accent); }
+/* ── Empty state ── */
+.empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:.9rem; }
+.empty-icon { font-size:2.5rem; margin-bottom:10px; }
 
-    /* ─── Responsive ──────────────────────────────────── */
-    @media (max-width: 400px) {
-      .players-grid { grid-template-columns: 1fr; }
-      body { padding: 18px 12px 36px; }
-      .team-lbl { font-size: .8rem; }
-    }
-  </style>
+/* ── Month badge ── */
+.month-badge {
+  display:inline-block; font-size:.72rem; font-weight:700;
+  padding:3px 10px; border-radius:99px;
+  background:var(--surface2); color:var(--muted); margin-bottom:10px; margin-top:6px;
+}
+
+/* ── Divider ── */
+.divider { height:1px; background:var(--border); margin:20px 0; }
+
+/* ── Login ── */
+.login-wrap {
+  max-width:340px; margin:0 auto; padding:60px 16px 40px;
+  display:flex; flex-direction:column; align-items:center; min-height:100vh;
+}
+.login-logo { font-size:3rem; margin-bottom:12px; }
+.login-title { font-size:1.8rem; font-weight:900; color:var(--accent); margin-bottom:4px; }
+.login-sub { font-size:.875rem; color:var(--muted); margin-bottom:36px; }
+.login-form { width:100%; }
+.login-err { color:var(--red); font-size:.875rem; font-weight:600; margin-top:10px; text-align:center; min-height:20px; }
+
+/* ── Standings toggle ── */
+.standings-wrap { margin-top:16px; }
+
+/* ── Trophy ── */
+.trophy-header { text-align:center; margin-bottom:20px; }
+.trophy-icon { font-size:3rem; }
+.trophy-title { font-size:1.6rem; font-weight:800; color:var(--accent); margin:6px 0 4px; }
+.trophy-sub { font-size:.875rem; color:var(--muted); }
+
+@media (max-width:400px) {
+  .lb-head, .lb-row { grid-template-columns:34px 1fr 30px 30px 42px 42px 48px; }
+  .home-actions { grid-template-columns:1fr; }
+}
+</style>
 </head>
 <body>
 
-<!-- ═══════════════ SCREEN 1 ═══════════════ -->
-<div id="screen1" class="screen active">
-  <h1 class="app-title">Padel Americano</h1>
-  <p class="app-sub">Wpisz imiona 12 graczy</p>
-  <div class="players-grid" id="playersGrid"></div>
+<!-- ══════════════════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════════════════ -->
+<div id="sLogin" class="screen active">
+  <div class="login-wrap">
+    <div class="login-logo">🐱</div>
+    <div class="login-title">Padel Koty</div>
+    <div class="login-sub">Wpisz hasło aby wejść</div>
+    <div class="login-form">
+      <div class="form-group">
+        <input class="txt-inp" id="loginInp" type="password"
+               placeholder="Hasło…" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')checkPassword()"
+               style="font-size:1.1rem; padding:14px 16px;">
+      </div>
+      <button class="btn btn-primary" onclick="checkPassword()">Wejdź →</button>
+      <div class="login-err" id="loginErr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     HOME
+══════════════════════════════════════════════════════ -->
+<div id="sHome" class="screen active">
+  <h1 class="app-title">Padel Koty</h1>
+  <p class="app-sub">Americano · Zarządzanie turniejami</p>
+
+  <div class="section-header">
+    <span class="section-title">Aktywne turnieje</span>
+    <button class="btn btn-primary btn-sm" onclick="goCreate()">+ Nowy turniej</button>
+  </div>
+  <div id="homeTournaments"></div>
+
+  <div class="divider"></div>
+
+  <div class="home-actions">
+    <button class="btn btn-outline" onclick="navigate('sPlayers')">👥 Gracze</button>
+    <button class="btn btn-outline" onclick="navigate('sLeaderboard')">🏆 Leaderboard</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PLAYERS
+══════════════════════════════════════════════════════ -->
+<div id="sPlayers" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="navigate('sHome')">← Wróć</button>
+    <span class="topbar-title">Baza graczy</span>
+  </div>
+  <div style="display:flex; gap:8px; margin-bottom:16px;">
+    <input class="txt-inp" id="newPlayerInp" placeholder="Imię gracza…"
+           onkeydown="if(event.key==='Enter')addPlayer()">
+    <button class="btn btn-primary btn-sm" style="flex-shrink:0;"
+            onclick="addPlayer()">Dodaj</button>
+  </div>
+  <div id="playersList"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     CREATE TOURNAMENT
+══════════════════════════════════════════════════════ -->
+<div id="sCreate" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="navigate('sHome')">← Wróć</button>
+    <span class="topbar-title">Nowy turniej</span>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Nazwa turnieju</label>
+    <input class="txt-inp" id="tName" placeholder="np. Grudniowe Koty">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Miesiąc</label>
+    <select class="sel-inp" id="tMonth"></select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Liczba rund</label>
+    <select class="sel-inp" id="tRounds">
+      <option value="5">5 rund</option>
+      <option value="7">7 rund</option>
+      <option value="9">9 rund</option>
+      <option value="11" selected>11 rund</option>
+      <option value="13">13 rund</option>
+      <option value="15">15 rund</option>
+    </select>
+  </div>
+  <div class="section-header">
+    <span class="section-title">Wybierz graczy (min. 4)</span>
+    <span id="selectedCount" style="font-size:.8rem; color:var(--muted);">0 wybranych</span>
+  </div>
+  <div id="createPlayerList" style="margin-bottom:20px;"></div>
+  <div id="createErr"></div>
   <button class="btn btn-primary" onclick="startTournament()">Losuj pary →</button>
 </div>
 
-<!-- ═══════════════ SCREEN 2 ═══════════════ -->
-<div id="screen2" class="screen">
+<!-- ══════════════════════════════════════════════════════
+     PLAY
+══════════════════════════════════════════════════════ -->
+<div id="sPlay" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="navigate('sHome')">← Wróć</button>
+    <span class="topbar-title" id="playTitle">Turniej</span>
+  </div>
   <div class="round-header">
-    <div class="round-lbl">Aktualna runda</div>
+    <div class="round-lbl">Runda</div>
     <div class="round-num" id="roundNum">1 / 11</div>
     <div class="progress-track">
       <div class="progress-bar" id="progressBar" style="width:0%"></div>
     </div>
   </div>
-  <div id="courts"></div>
-  <div class="action-area" id="actionArea">
-    <button class="btn btn-primary" id="actionBtn" onclick="advance()">Następna runda →</button>
-    <button class="btn btn-outline" onclick="finishEarly()">Zakończ turniej wcześniej</button>
-  </div>
+  <div id="restingBar"></div>
+  <div id="courtsArea"></div>
+  <div id="playErr"></div>
+  <button class="btn btn-primary" id="nextRoundBtn" onclick="advanceRound()">Następna runda →</button>
+  <button class="btn btn-outline mt8" onclick="toggleStandings()">📊 Aktualna tabela</button>
+  <div id="standingsWrap" class="standings-wrap" style="display:none;"></div>
+  <button class="btn btn-outline mt8" onclick="finishEarly()">🏁 Zakończ turniej</button>
 </div>
 
-<!-- ═══════════════ SCREEN 3 ═══════════════ -->
-<div id="screen3" class="screen">
-  <div class="results-top">
-    <div class="trophy">🏆</div>
-    <h1 class="app-title">Wyniki końcowe</h1>
-    <p class="app-sub">Turniej zakończony!</p>
+<!-- ══════════════════════════════════════════════════════
+     RESULTS
+══════════════════════════════════════════════════════ -->
+<div id="sResults" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="navigate('sHome')">← Turnieje</button>
+    <span class="topbar-title" id="resultsTitle">Wyniki</span>
   </div>
-  <div class="lb" id="lb"></div>
-  <button class="btn btn-primary" onclick="restart()">Zagraj ponownie</button>
+  <div class="trophy-header">
+    <div class="trophy-icon">🏆</div>
+    <div class="trophy-title">Turniej zakończony!</div>
+    <div class="trophy-sub" id="resultsSub"></div>
+  </div>
+  <div id="resultsLb"></div>
+  <button class="btn btn-outline" onclick="navigate('sHome')">← Powrót</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     GLOBAL LEADERBOARD
+══════════════════════════════════════════════════════ -->
+<div id="sLeaderboard" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="navigate('sHome')">← Wróć</button>
+    <span class="topbar-title">Global Leaderboard</span>
+  </div>
+  <div id="globalLb"></div>
 </div>
 
 <script>
-/* ─── Constants ────────────────────────────────────────────────── */
-const ROUNDS       = 11;
-const COURT_SCORE  = 21;
-const N            = 12;
+/* ═══════════════════════════════════════════════════════════════
+   PASSWORD  ← zmień APP_PASSWORD na swoje hasło
+═══════════════════════════════════════════════════════════════ */
+const APP_PASSWORD = 'koty2024'; // <-- TWOJE HASŁO (zmień przed wrzuceniem na GitHub)
+const AUTH_KEY = 'padelAuth';
 
-/* ─── State ────────────────────────────────────────────────────── */
-let players = [];   // [{id, name}, …]  (12 items, shuffled each start)
-let pts     = {};   // { playerId: totalPoints }
-let round   = 0;
-let courts  = [];   // [{court, team1:[p,p], team2:[p,p]}, …]
-
-/* ─── Utilities ────────────────────────────────────────────────── */
-function shuffle(a) {
-  const b = [...a];
-  for (let i = b.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [b[i], b[j]] = [b[j], b[i]];
+function checkPassword() {
+  const val = document.getElementById('loginInp').value;
+  if (val === APP_PASSWORD) {
+    localStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('loginInp').value = '';
+    document.getElementById('loginErr').textContent = '';
+    navigate('sHome');
+  } else {
+    document.getElementById('loginErr').textContent = '⚠ Złe hasło, spróbuj ponownie';
+    document.getElementById('loginInp').value = '';
+    document.getElementById('loginInp').focus();
   }
-  return b;
 }
 
-function showScreen(n) {
+function checkAuth() {
+  if (!localStorage.getItem(AUTH_KEY)) {
+    navigate('sLogin');
+    return false;
+  }
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════════ */
+const STORE = 'padelKoty_v2';
+const COURT_SCORE = 21;
+let DB = { players: [], tournaments: [] };
+
+function saveDB() { localStorage.setItem(STORE, JSON.stringify(DB)); }
+function loadDB() {
+  try {
+    const r = localStorage.getItem(STORE);
+    if (r) DB = JSON.parse(r);
+  } catch(e) { DB = { players: [], tournaments: [] }; }
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+function navigate(id) {
+  if (id !== 'sLogin' && !checkAuth()) return;
+  if (id === 'sHome')        renderHome();
+  if (id === 'sPlayers')     renderPlayersList();
+  if (id === 'sLeaderboard') renderGlobalLeaderboard();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen' + n).classList.add('active');
+  document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
 }
 
-/* ─── Screen 1: Build inputs ───────────────────────────────────── */
-function buildInputs() {
-  const g = document.getElementById('playersGrid');
-  g.innerHTML = '';
-  for (let i = 0; i < N; i++) {
-    const d = document.createElement('div');
-    d.className = 'inp-group';
-    d.innerHTML = `
-      <span class="inp-label">Gracz ${i + 1}</span>
-      <input class="txt-inp" id="p${i}" type="text"
-             placeholder="Imię" autocomplete="off" spellcheck="false">
-    `;
-    g.appendChild(d);
+/* ═══════════════════════════════════════════════════════════════
+   MONTHS
+═══════════════════════════════════════════════════════════════ */
+const MONTHS_PL = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
+                   'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+
+function buildMonthSelect() {
+  const sel = document.getElementById('tMonth');
+  sel.innerHTML = '';
+  const now = new Date();
+  for (let offset = -6; offset <= 12; offset++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    const lbl = MONTHS_PL[d.getMonth()] + ' ' + d.getFullYear();
+    const opt = document.createElement('option');
+    opt.value = val; opt.textContent = lbl;
+    if (offset === 0) opt.selected = true;
+    sel.appendChild(opt);
   }
 }
 
-/* ─── Start tournament ─────────────────────────────────────────── */
-function startTournament() {
-  players = Array.from({ length: N }, (_, i) => {
-    const v = document.getElementById('p' + i).value.trim();
-    return { id: i, name: v || ('Gracz ' + (i + 1)) };
-  });
-
-  pts    = Object.fromEntries(players.map(p => [p.id, 0]));
-  players = shuffle(players);   // random seed for round 1
-  round  = 1;
-  courts = makePairings();
-
-  showScreen(2);
-  renderRound();
+function monthLabel(val) {
+  if (!val) return '';
+  const [y, m] = val.split('-');
+  return MONTHS_PL[parseInt(m) - 1] + ' ' + y;
 }
 
-/* ─── Americano pairing ────────────────────────────────────────── */
-/*
-  Sort all 12 players by cumulative score (desc).
-  Split into three groups of 4 (one per court).
-  Within each group: team1 = [rank1, rank4], team2 = [rank2, rank3].
-  This balances the match while keeping similar-level players together.
-*/
-function makePairings() {
-  const ranked = [...players].sort((a, b) => pts[b.id] - pts[a.id]);
-  return [0, 1, 2].map(i => {
+/* ═══════════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════════ */
+function initials(name) {
+  return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function getPlayerName(id) {
+  const p = DB.players.find(p => p.id === id);
+  return p ? p.name : '?';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════════════════ */
+function renderHome() {
+  const box = document.getElementById('homeTournaments');
+  const tours = [...DB.tournaments].reverse();
+  if (!tours.length) {
+    box.innerHTML = '<div class="empty"><div class="empty-icon">🎾</div>Brak turniejów. Utwórz pierwszy!</div>';
+    return;
+  }
+  box.innerHTML = '';
+
+  // group by month, newest first
+  const byMonth = {};
+  tours.forEach(t => {
+    if (!byMonth[t.month]) byMonth[t.month] = [];
+    byMonth[t.month].push(t);
+  });
+
+  Object.keys(byMonth).sort().reverse().forEach(month => {
+    const grpDiv = document.createElement('div');
+    grpDiv.innerHTML = `<div class="month-badge">${monthLabel(month)}</div>`;
+
+    byMonth[month].forEach(t => {
+      const played = t.rounds.length;
+      const finished = t.status === 'finished';
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-row">
+          <div>
+            <div class="card-title">${t.name}</div>
+            <div class="card-meta">${t.playerIds.length} graczy · ${played}/${t.totalRounds} rund</div>
+          </div>
+          <span class="badge ${finished ? 'badge-muted' : 'badge-green'}">${finished ? 'Zakończony' : 'Aktywny'}</span>
+        </div>
+      `;
+      card.onclick = () => openTournament(t.id);
+      grpDiv.appendChild(card);
+    });
+    box.appendChild(grpDiv);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PLAYERS SCREEN
+═══════════════════════════════════════════════════════════════ */
+function addPlayer() {
+  const inp = document.getElementById('newPlayerInp');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (DB.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    alert('Gracz o tym imieniu już istnieje!');
+    return;
+  }
+  DB.players.push({ id: uid(), name });
+  saveDB();
+  inp.value = '';
+  renderPlayersList();
+}
+
+function removePlayer(id) {
+  if (!confirm('Usunąć gracza z bazy?')) return;
+  DB.players = DB.players.filter(p => p.id !== id);
+  saveDB();
+  renderPlayersList();
+}
+
+function renderPlayersList() {
+  const box = document.getElementById('playersList');
+  if (!DB.players.length) {
+    box.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Brak graczy. Dodaj pierwszego!</div>';
+    return;
+  }
+  box.innerHTML = '';
+  DB.players.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'player-item';
+    el.innerHTML = `
+      <div class="avatar">${initials(p.name)}</div>
+      <div class="player-name">${p.name}</div>
+      <button class="icon-btn" onclick="removePlayer('${p.id}')">✕</button>
+    `;
+    box.appendChild(el);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CREATE TOURNAMENT
+═══════════════════════════════════════════════════════════════ */
+let selectedPlayers = new Set();
+
+function goCreate() {
+  buildMonthSelect();
+  selectedPlayers = new Set();
+  document.getElementById('tName').value = '';
+  document.getElementById('createErr').innerHTML = '';
+  renderCreatePlayerList();
+  navigate('sCreate');
+}
+
+function renderCreatePlayerList() {
+  const box = document.getElementById('createPlayerList');
+  document.getElementById('selectedCount').textContent = selectedPlayers.size + ' wybranych';
+  if (!DB.players.length) {
+    box.innerHTML = '<div class="empty">Najpierw dodaj graczy w sekcji 👥 Gracze</div>';
+    return;
+  }
+  box.innerHTML = '';
+  DB.players.forEach(p => {
+    const sel = selectedPlayers.has(p.id);
+    const el = document.createElement('div');
+    el.className = 'player-check-item' + (sel ? ' selected' : '');
+    el.id = 'cp_' + p.id;
+    el.innerHTML = `
+      <div class="avatar">${initials(p.name)}</div>
+      <div class="player-name">${p.name}</div>
+      <div class="check-icon">${sel ? '✅' : '⬜'}</div>
+    `;
+    el.onclick = () => toggleCreatePlayer(p.id);
+    box.appendChild(el);
+  });
+}
+
+function toggleCreatePlayer(id) {
+  if (selectedPlayers.has(id)) selectedPlayers.delete(id);
+  else selectedPlayers.add(id);
+  const el = document.getElementById('cp_' + id);
+  if (el) {
+    const sel = selectedPlayers.has(id);
+    el.classList.toggle('selected', sel);
+    el.querySelector('.check-icon').textContent = sel ? '✅' : '⬜';
+  }
+  document.getElementById('selectedCount').textContent = selectedPlayers.size + ' wybranych';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AMERICANO MATCHUPS
+═══════════════════════════════════════════════════════════════ */
+function makeMatchups(playerIds, pts) {
+  const ranked = [...playerIds].sort((a, b) => (pts[b] || 0) - (pts[a] || 0));
+  const numCourts = Math.floor(ranked.length / 4);
+  const resting = ranked.slice(numCourts * 4);
+  const courts = [];
+  for (let i = 0; i < numCourts; i++) {
     const g = ranked.slice(i * 4, i * 4 + 4);
-    return { court: i + 1, team1: [g[0], g[3]], team2: [g[1], g[2]] };
-  });
+    courts.push({ court: i + 1, team1: [g[0], g[3]], team2: [g[1], g[2]] });
+  }
+  return { courts, resting };
 }
 
-/* ─── Render current round ─────────────────────────────────────── */
-function renderRound() {
-  document.getElementById('roundNum').textContent   = round + ' / ' + ROUNDS;
-  document.getElementById('progressBar').style.width = ((round - 1) / ROUNDS * 100) + '%';
-  document.getElementById('actionBtn').textContent  =
-    round >= ROUNDS ? 'Podsumuj wyniki →' : 'Następna runda →';
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
-  // clear old error
-  const old = document.querySelector('.inline-err');
-  if (old) old.remove();
+/* ═══════════════════════════════════════════════════════════════
+   COMPUTE PTS FROM ROUNDS
+═══════════════════════════════════════════════════════════════ */
+function computePts(t) {
+  const pts = Object.fromEntries(t.playerIds.map(id => [id, 0]));
+  t.rounds.forEach(r => {
+    r.matches.forEach(m => {
+      m.team1.forEach(id => { pts[id] += m.score1; });
+      m.team2.forEach(id => { pts[id] += m.score2; });
+    });
+  });
+  return pts;
+}
 
-  const box = document.getElementById('courts');
+/* ═══════════════════════════════════════════════════════════════
+   START TOURNAMENT
+═══════════════════════════════════════════════════════════════ */
+function startTournament() {
+  const name = document.getElementById('tName').value.trim() || 'Turniej';
+  const month = document.getElementById('tMonth').value;
+  const totalRounds = parseInt(document.getElementById('tRounds').value, 10);
+  const playerIds = shuffle([...selectedPlayers]);
+
+  const errBox = document.getElementById('createErr');
+  if (playerIds.length < 4) {
+    errBox.innerHTML = '<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';
+    return;
+  }
+  errBox.innerHTML = '';
+
+  const t = {
+    id: uid(), name, month, totalRounds,
+    playerIds, status: 'active', rounds: [], createdAt: Date.now()
+  };
+  DB.tournaments.push(t);
+  saveDB();
+  openTournament(t.id);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OPEN / LOAD TOURNAMENT ROUND
+═══════════════════════════════════════════════════════════════ */
+let activeTournamentId = null;
+
+function openTournament(id) {
+  const t = DB.tournaments.find(t => t.id === id);
+  if (!t) return;
+  activeTournamentId = id;
+  if (t.status === 'finished') {
+    showResults(t);
+    return;
+  }
+  loadRound(t);
+}
+
+function loadRound(t) {
+  const pts = computePts(t);
+  const roundNum = t.rounds.length + 1;
+  const matchups = makeMatchups(t.playerIds, pts);
+
+  // store matchups on tournament object in memory (not persisted — regenerated each time)
+  t._matchups = matchups;
+
+  document.getElementById('playTitle').textContent = t.name;
+  document.getElementById('roundNum').textContent = roundNum + ' / ' + t.totalRounds;
+  document.getElementById('progressBar').style.width = ((roundNum - 1) / t.totalRounds * 100) + '%';
+  document.getElementById('nextRoundBtn').textContent =
+    roundNum >= t.totalRounds ? 'Podsumuj wyniki →' : 'Następna runda →';
+  document.getElementById('standingsWrap').style.display = 'none';
+
+  renderCourts(t);
+  navigate('sPlay');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER COURTS
+═══════════════════════════════════════════════════════════════ */
+function renderCourts(t) {
+  const { courts, resting } = t._matchups;
+
+  const rb = document.getElementById('restingBar');
+  if (resting.length) {
+    const names = resting.map(id => getPlayerName(id)).join(', ');
+    rb.innerHTML = `<div class="resting-bar">⏸ Odpoczywają: <strong>${names}</strong></div>`;
+  } else {
+    rb.innerHTML = '';
+  }
+
+  document.getElementById('playErr').innerHTML = '';
+  const box = document.getElementById('courtsArea');
   box.innerHTML = '';
 
   courts.forEach((c, idx) => {
-    const n1 = c.team1.map(p => p.name).join(' & ');
-    const n2 = c.team2.map(p => p.name).join(' & ');
-
+    const n1 = c.team1.map(id => getPlayerName(id)).join(' & ');
+    const n2 = c.team2.map(id => getPlayerName(id)).join(' & ');
     const card = document.createElement('div');
     card.className = 'court-card';
     card.innerHTML = `
@@ -383,129 +773,260 @@ function renderRound() {
         <div class="score-box">
           <div class="score-cap">${n1}</div>
           <input class="score-inp" id="s${idx}" type="number"
-                 inputmode="numeric" min="0" max="21"
-                 placeholder="—"
-                 onfocus="this.select()"
-                 oninput="calcOpp(${idx})">
+                 inputmode="numeric" min="0" max="21" placeholder="—"
+                 onfocus="this.select()" oninput="calcOpp(${idx})">
         </div>
         <div class="score-sep">:</div>
         <div class="score-box">
           <div class="score-cap">${n2}</div>
-          <input class="score-inp" id="o${idx}" type="number"
-                 placeholder="—" disabled>
+          <input class="score-inp" id="o${idx}" type="number" placeholder="—" disabled>
         </div>
       </div>
     `;
     box.appendChild(card);
   });
 
-  // auto-focus first score input
-  setTimeout(() => {
-    const first = document.getElementById('s0');
-    if (first) first.focus();
-  }, 50);
+  setTimeout(() => { const f = document.getElementById('s0'); if (f) f.focus(); }, 60);
 }
 
-/* ─── Live score calc ──────────────────────────────────────────── */
 function calcOpp(idx) {
   const inp = document.getElementById('s' + idx);
   const opp = document.getElementById('o' + idx);
-  const raw = inp.value;
-
-  if (raw === '') { opp.value = ''; return; }
-
-  let v = parseInt(raw, 10);
-  if (isNaN(v))  { inp.value = ''; opp.value = ''; return; }
-  if (v < 0)       v = 0;
-  if (v > COURT_SCORE) v = COURT_SCORE;
-
+  if (inp.value === '') { opp.value = ''; return; }
+  let v = parseInt(inp.value, 10);
+  if (isNaN(v)) { inp.value = ''; opp.value = ''; return; }
+  v = Math.max(0, Math.min(COURT_SCORE, v));
   inp.value = v;
   opp.value = COURT_SCORE - v;
 }
 
-/* ─── Advance to next round or finish ─────────────────────────── */
-function advance() {
-  // remove old error
-  const old = document.querySelector('.inline-err');
-  if (old) old.remove();
+/* ═══════════════════════════════════════════════════════════════
+   ADVANCE ROUND
+═══════════════════════════════════════════════════════════════ */
+function advanceRound() {
+  const t = DB.tournaments.find(t => t.id === activeTournamentId);
+  if (!t) return;
+  const { courts } = t._matchups;
 
-  // validate
+  document.getElementById('playErr').innerHTML = '';
   for (let i = 0; i < courts.length; i++) {
     if (document.getElementById('s' + i).value === '') {
-      showErr('Wpisz wynik dla Kortu ' + (i + 1));
+      document.getElementById('playErr').innerHTML =
+        `<div class="inline-err">⚠ Wpisz wynik dla Kortu ${courts[i].court}</div>`;
       return;
     }
   }
 
-  // commit points
-  courts.forEach((c, i) => {
+  const matches = courts.map((c, i) => {
     const s1 = parseInt(document.getElementById('s' + i).value, 10);
     const s2 = COURT_SCORE - s1;
-    c.team1.forEach(p => { pts[p.id] += s1; });
-    c.team2.forEach(p => { pts[p.id] += s2; });
+    return { court: c.court, team1: c.team1, team2: c.team2, score1: s1, score2: s2 };
   });
 
-  if (round >= ROUNDS) {
-    showScreen(3);
-    renderResults();
+  t.rounds.push({ roundNum: t.rounds.length + 1, matches });
+  saveDB();
+
+  if (t.rounds.length >= t.totalRounds) {
+    t.status = 'finished';
+    saveDB();
+    showResults(t);
   } else {
-    round++;
-    courts = makePairings();
-    renderRound();
+    loadRound(t);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
-function showErr(msg) {
-  const el = document.createElement('div');
-  el.className = 'inline-err';
-  el.textContent = '⚠ ' + msg;
-  const area = document.getElementById('actionArea');
-  area.insertBefore(el, area.firstChild);
-  setTimeout(() => el.remove(), 3500);
+function finishEarly() {
+  if (!confirm('Zakończyć turniej i pokazać wyniki?')) return;
+  const t = DB.tournaments.find(t => t.id === activeTournamentId);
+  if (!t) return;
+  t.status = 'finished';
+  saveDB();
+  showResults(t);
 }
 
-/* ─── Results ──────────────────────────────────────────────────── */
-function renderResults() {
-  const sorted = [...players].sort((a, b) => pts[b.id] - pts[a.id]);
+/* ═══════════════════════════════════════════════════════════════
+   STANDINGS TOGGLE (mid-tournament)
+═══════════════════════════════════════════════════════════════ */
+function toggleStandings() {
+  const wrap = document.getElementById('standingsWrap');
+  if (wrap.style.display !== 'none') {
+    wrap.style.display = 'none';
+    return;
+  }
+  const t = DB.tournaments.find(t => t.id === activeTournamentId);
+  if (!t || !t.rounds.length) {
+    wrap.innerHTML = '<div class="empty" style="padding:20px">Zagraj przynajmniej jedną rundę!</div>';
+    wrap.style.display = 'block';
+    return;
+  }
+  const stats = calcStats([t.id], t.playerIds);
+  const players = t.playerIds.map(id => ({ id, name: getPlayerName(id) }));
+  players.sort((a, b) => (stats[b.id]?.pm || 0) - (stats[a.id]?.pm || 0));
+  wrap.innerHTML = '';
+  wrap.appendChild(makeLbElement('Aktualna tabela', players, stats));
+  wrap.style.display = 'block';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CALC STATS
+═══════════════════════════════════════════════════════════════ */
+function calcStats(tournamentIds, filterPlayerIds) {
+  const stats = {};
+  const tours = DB.tournaments.filter(t => tournamentIds.includes(t.id));
+
+  tours.forEach(t => {
+    t.rounds.forEach(r => {
+      r.matches.forEach(m => {
+        const allIds = [...m.team1, ...m.team2];
+        allIds.forEach(id => {
+          if (filterPlayerIds && !filterPlayerIds.includes(id)) return;
+          if (!stats[id]) stats[id] = { w: 0, l: 0, pf: 0, pa: 0, pm: 0 };
+        });
+        const win1 = m.score1 > m.score2;
+        m.team1.forEach(id => {
+          if (filterPlayerIds && !filterPlayerIds.includes(id)) return;
+          if (!stats[id]) stats[id] = { w: 0, l: 0, pf: 0, pa: 0, pm: 0 };
+          stats[id].pf += m.score1;
+          stats[id].pa += m.score2;
+          if (win1) stats[id].w++; else stats[id].l++;
+        });
+        m.team2.forEach(id => {
+          if (filterPlayerIds && !filterPlayerIds.includes(id)) return;
+          if (!stats[id]) stats[id] = { w: 0, l: 0, pf: 0, pa: 0, pm: 0 };
+          stats[id].pf += m.score2;
+          stats[id].pa += m.score1;
+          if (!win1) stats[id].w++; else stats[id].l++;
+        });
+      });
+    });
+  });
+
+  Object.values(stats).forEach(s => { s.pm = s.pf - s.pa; });
+  return stats;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESULTS SCREEN
+═══════════════════════════════════════════════════════════════ */
+function showResults(t) {
+  document.getElementById('resultsTitle').textContent = t.name;
+  document.getElementById('resultsSub').textContent = monthLabel(t.month) + ' · ' + t.rounds.length + ' rund';
+
+  const stats = calcStats([t.id], t.playerIds);
+  const players = t.playerIds.map(id => ({ id, name: getPlayerName(id) }));
+  players.sort((a, b) => (stats[b.id]?.pm || 0) - (stats[a.id]?.pm || 0));
+
+  const box = document.getElementById('resultsLb');
+  box.innerHTML = '';
+  box.appendChild(makeLbElement('Wyniki końcowe', players, stats));
+
+  navigate('sResults');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL LEADERBOARD
+═══════════════════════════════════════════════════════════════ */
+function renderGlobalLeaderboard() {
+  const box = document.getElementById('globalLb');
+  box.innerHTML = '';
+
+  const allIds = DB.tournaments.map(t => t.id);
+  if (!allIds.length) {
+    box.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>Brak danych. Rozegraj pierwszy turniej!</div>';
+    return;
+  }
+
+  const stats = calcStats(allIds);
+  const players = DB.players.filter(p => stats[p.id]);
+
+  if (!players.length) {
+    box.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>Brak rozegranych meczów.</div>';
+    return;
+  }
+
+  players.sort((a, b) => (stats[b.id]?.pm || 0) - (stats[a.id]?.pm || 0));
+
+  // Count tournaments per player
+  const tourCount = {};
+  DB.tournaments.forEach(t => {
+    t.playerIds.forEach(id => {
+      tourCount[id] = (tourCount[id] || 0) + 1;
+    });
+  });
+
+  box.appendChild(makeLbElement('Wszystkie turnieje · ' + DB.tournaments.length + ' sesji', players, stats));
+
+  // Per-month breakdown
+  const byMonth = {};
+  DB.tournaments.forEach(t => {
+    if (!byMonth[t.month]) byMonth[t.month] = [];
+    byMonth[t.month].push(t.id);
+  });
+
+  Object.keys(byMonth).sort().reverse().forEach(month => {
+    const mStats = calcStats(byMonth[month]);
+    const mPlayers = DB.players.filter(p => mStats[p.id]);
+    if (!mPlayers.length) return;
+    mPlayers.sort((a, b) => (mStats[b.id]?.pm || 0) - (mStats[a.id]?.pm || 0));
+    box.appendChild(makeLbElement(monthLabel(month), mPlayers, mStats));
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LB BUILDER
+═══════════════════════════════════════════════════════════════ */
+function makeLbElement(title, players, stats) {
   const medals = ['🥇', '🥈', '🥉'];
   const cls    = ['r1', 'r2', 'r3'];
 
-  const lb = document.getElementById('lb');
+  const lb = document.createElement('div');
+  lb.className = 'lb';
   lb.innerHTML = `
+    <div class="lb-title">${title}</div>
     <div class="lb-head">
-      <span>#</span><span>Gracz</span><span>Punkty</span>
+      <span>#</span>
+      <span style="text-align:left">Gracz</span>
+      <span>W</span>
+      <span>L</span>
+      <span>PF</span>
+      <span>PA</span>
+      <span>+/-</span>
     </div>
   `;
 
-  sorted.forEach((p, i) => {
+  players.forEach((p, i) => {
+    const s = stats[p.id] || { w: 0, l: 0, pf: 0, pa: 0, pm: 0 };
+    const pmStr = s.pm > 0 ? '+' + s.pm : String(s.pm);
+    const pmClass = s.pm > 0 ? 'pos' : s.pm < 0 ? 'neg' : 'zer';
+
     const row = document.createElement('div');
     row.className = 'lb-row' + (i < 3 ? ' ' + cls[i] : '');
     row.innerHTML = `
       <div class="lb-rank">${medals[i] ?? (i + 1)}</div>
       <div class="lb-name">${p.name}</div>
-      <div class="lb-pts">${pts[p.id]}</div>
+      <div class="lb-cell">${s.w}</div>
+      <div class="lb-cell">${s.l}</div>
+      <div class="lb-cell">${s.pf}</div>
+      <div class="lb-cell">${s.pa}</div>
+      <div class="lb-pm ${pmClass}">${pmStr}</div>
     `;
     lb.appendChild(row);
   });
+
+  return lb;
 }
 
-/* ─── Finish early ─────────────────────────────────────────────── */
-function finishEarly() {
-  if (!confirm('Na pewno zakończyć turniej i pokazać wyniki?')) return;
-  showScreen(3);
-  renderResults();
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+loadDB();
+if (localStorage.getItem(AUTH_KEY)) {
+  navigate('sHome');
+} else {
+  navigate('sLogin');
+  setTimeout(() => document.getElementById('loginInp').focus(), 100);
 }
-
-/* ─── Restart ──────────────────────────────────────────────────── */
-function restart() {
-  players = []; pts = {}; round = 0; courts = [];
-  buildInputs();
-  showScreen(1);
-}
-
-/* ─── Init ─────────────────────────────────────────────────────── */
-buildInputs();
 </script>
 </body>
 </html>
