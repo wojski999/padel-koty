@@ -607,6 +607,10 @@ function startListeners(){
     usersCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     if(isActive('sLb'))        renderLb();
     if(isActive('sProfile'))   renderMyProfile();
+    if(isActive('sAmerCreate'))renderUserPicker('aPlayerList','aCnt',selPlayers);
+    if(isActive('sMexCreate')) renderUserPicker('mPlayerList','mCnt',selPlayers,true);
+    if(isActive('s2v2Create')) renderUserPicker('twoPlayerList','twoCnt',selPlayers,false,4);
+    if(isActive('sPlayers'))   renderPlayersMgmt();
   }));
   unsubFns.push(onSnapshot(collection(db,'players'),s=>{
     playersCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
