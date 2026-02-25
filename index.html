@@ -321,6 +321,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
     <button class="btn btn-primary btn-sm" id="btnNewAmer">+ Nowy</button>
   </div>
   <div id="amerList"><div class="empty">Ładowanie…</div></div>
+  <div class="divider"></div>
+  <button class="btn btn-outline" id="btnManagePlayers">👥 Zarządzaj graczami</button>
+</div>
+
+<!-- ═══ PLAYERS MANAGEMENT ═══ -->
+<div id="sPlayers" class="screen">
+  <div class="topbar">
+    <button class="back-btn" id="playersBack">← Wróć</button>
+    <span class="topbar-title">Gracze</span>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <input class="txt-inp" id="newPlayerInp" placeholder="Imię gracza…">
+    <button class="btn btn-primary btn-sm" style="flex-shrink:0" id="btnAddPlayer">Dodaj</button>
+  </div>
+  <div id="playersMgmtList"></div>
 </div>
 
 <!-- ═══ HOME (Mexicano) ═══ -->
@@ -553,7 +568,7 @@ const app=initializeApp({
 const auth=getAuth(app), db=getFirestore(app);
 
 /* ══ STATE ══ */
-let me=null, usersCache=[], amerCache=[], mexCache=[], twoCache=[];
+let me=null, usersCache=[], playersCache=[], amerCache=[], mexCache=[], twoCache=[];
 let selPlayers=new Set(), mexPairs=[], activeId=null, activeTour=null, activeType=null;
 let prevScreen=null, lbFilter='all';
 let unsubFns=[];
@@ -566,6 +581,9 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     await setDoc(doc(db,'users',user.uid),
       {name:user.displayName,email:user.email,photoURL:user.photoURL,lastLogin:serverTimestamp()},
+      {merge:true});
+    await setDoc(doc(db,'players',user.uid),
+      {name:user.displayName,uid:user.uid,photoURL:user.photoURL,isGoogle:true},
       {merge:true});
     document.getElementById('userPhoto').src=user.photoURL||'';
     document.getElementById('userName').textContent=user.displayName?.split(' ')[0]||user.email;
@@ -586,12 +604,16 @@ document.getElementById('btnLogout').onclick=()=>signOut(auth);
 /* ══ LISTENERS ══ */
 function startListeners(){
   unsubFns.push(onSnapshot(collection(db,'users'),s=>{
-    usersCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name?.localeCompare(b.name));
+    usersCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    if(isActive('sLb'))        renderLb();
+    if(isActive('sProfile'))   renderMyProfile();
+  }));
+  unsubFns.push(onSnapshot(collection(db,'players'),s=>{
+    playersCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     if(isActive('sAmerCreate'))renderUserPicker('aPlayerList','aCnt',selPlayers);
     if(isActive('sMexCreate')) renderUserPicker('mPlayerList','mCnt',selPlayers,true);
     if(isActive('s2v2Create')) renderUserPicker('twoPlayerList','twoCnt',selPlayers,false,4);
-    if(isActive('sLb'))        renderLb();
-    if(isActive('sProfile'))   renderMyProfile();
+    if(isActive('sPlayers'))   renderPlayersMgmt();
   }));
   unsubFns.push(onSnapshot(collection(db,'americano'),s=>{
     amerCache=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>ts(b)-ts(a));
@@ -641,8 +663,8 @@ document.querySelectorAll('.nav-tab').forEach(btn=>{
 });
 
 /* ══ HELPERS ══ */
-function uid2name(id){return usersCache.find(u=>u.id===id)?.name||'?';}
-function uid2photo(id){return usersCache.find(u=>u.id===id)?.photoURL||'';}
+function uid2name(id){return playersCache.find(u=>u.id===id)?.name||usersCache.find(u=>u.id===id)?.name||'?';}
+function uid2photo(id){return playersCache.find(u=>u.id===id)?.photoURL||usersCache.find(u=>u.id===id)?.photoURL||'';}
 function initials(name=''){return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 function monthLabel(v){if(!v)return'';const[y,m]=v.split('-');return MONTHS[+m-1]+' '+y;}
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
@@ -715,7 +737,8 @@ function renderUserPicker(boxId,cntId,sel,pairMode=false,maxSel=0){
   const box=document.getElementById(boxId);
   document.getElementById(cntId).textContent=sel.size+' wybranych';
   box.innerHTML='';
-  usersCache.forEach(u=>{
+  if(!playersCache.length){box.innerHTML='<div class="empty">Brak graczy. Dodaj ich w zakładce 👥 Zarządzaj graczami</div>';return;}
+  playersCache.forEach(u=>{
     const s=sel.has(u.id);
     const el=document.createElement('div'); el.className='player-check-item'+(s?' selected':'');
     el.id='pc_'+u.id;
@@ -734,6 +757,39 @@ function renderUserPicker(boxId,cntId,sel,pairMode=false,maxSel=0){
 }
 
 /* ══ CREATE AMERICANO ══ */
+/* ══ PLAYERS MANAGEMENT ══ */
+document.getElementById('btnManagePlayers').onclick=()=>{renderPlayersMgmt();push('sPlayers');};
+document.getElementById('playersBack').onclick=()=>goTab('sAmer');
+document.getElementById('btnAddPlayer').onclick=addPlayerManual;
+document.getElementById('newPlayerInp').onkeydown=e=>{if(e.key==='Enter')addPlayerManual();};
+
+async function addPlayerManual(){
+  const inp=document.getElementById('newPlayerInp');
+  const name=inp.value.trim(); if(!name)return;
+  if(playersCache.find(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Gracz już istnieje!');return;}
+  inp.value='';
+  await addDoc(collection(db,'players'),{name,isGoogle:false,createdAt:serverTimestamp()});
+}
+async function removePlayer(id){
+  if(!confirm('Usunąć gracza?'))return;
+  await deleteDoc(doc(db,'players',id));
+}
+function renderPlayersMgmt(){
+  const box=document.getElementById('playersMgmtList');
+  if(!playersCache.length){box.innerHTML='<div class="empty"><div class="empty-icon">👤</div>Brak graczy</div>';return;}
+  box.innerHTML='';
+  playersCache.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='player-check-item';el.style.cursor='default';
+    el.innerHTML=`${p.photoURL?`<img src="${p.photoURL}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0" alt="">`:`<div class="p-avatar">${initials(p.name||'')}</div>`}
+      <div class="p-info"><div class="p-name">${p.name||'?'}</div>
+      <div class="p-sub">${p.isGoogle?'🔗 Google':''}</div></div>
+      ${!p.isGoogle?`<button class="icon-btn" data-id="${p.id}">✕</button>`:''}`;
+    el.querySelector('[data-id]')?.addEventListener('click',()=>removePlayer(p.id));
+    box.appendChild(el);
+  });
+}
+
 document.getElementById('btnNewAmer').onclick=()=>{
   selPlayers=new Set(); buildMonthSel('aTMonth');
   document.getElementById('aTName').value=''; document.getElementById('aCreateErr').innerHTML='';
