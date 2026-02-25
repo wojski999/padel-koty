@@ -663,8 +663,14 @@ document.querySelectorAll('.nav-tab').forEach(btn=>{
 });
 
 /* ══ HELPERS ══ */
-function uid2name(id){return playersCache.find(u=>u.id===id)?.name||usersCache.find(u=>u.id===id)?.name||'?';}
-function uid2photo(id){return playersCache.find(u=>u.id===id)?.photoURL||usersCache.find(u=>u.id===id)?.photoURL||'';}
+function allPlayers(){
+  const map=new Map();
+  usersCache.forEach(u=>map.set(u.id,{...u,isGoogle:true}));
+  playersCache.forEach(p=>{if(!map.has(p.id))map.set(p.id,p);});
+  return[...map.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+}
+function uid2name(id){return allPlayers().find(u=>u.id===id)?.name||'?';}
+function uid2photo(id){return allPlayers().find(u=>u.id===id)?.photoURL||'';}
 function initials(name=''){return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 function monthLabel(v){if(!v)return'';const[y,m]=v.split('-');return MONTHS[+m-1]+' '+y;}
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
@@ -737,8 +743,9 @@ function renderUserPicker(boxId,cntId,sel,pairMode=false,maxSel=0){
   const box=document.getElementById(boxId);
   document.getElementById(cntId).textContent=sel.size+' wybranych';
   box.innerHTML='';
-  if(!playersCache.length){box.innerHTML='<div class="empty">Brak graczy. Dodaj ich w zakładce 👥 Zarządzaj graczami</div>';return;}
-  playersCache.forEach(u=>{
+  const all=allPlayers();
+  if(!all.length){box.innerHTML='<div class="empty">Brak graczy. Dodaj ich w zakładce 👥 Zarządzaj graczami</div>';return;}
+  all.forEach(u=>{
     const s=sel.has(u.id);
     const el=document.createElement('div'); el.className='player-check-item'+(s?' selected':'');
     el.id='pc_'+u.id;
@@ -766,7 +773,7 @@ document.getElementById('newPlayerInp').onkeydown=e=>{if(e.key==='Enter')addPlay
 async function addPlayerManual(){
   const inp=document.getElementById('newPlayerInp');
   const name=inp.value.trim(); if(!name)return;
-  if(playersCache.find(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Gracz już istnieje!');return;}
+  if(allPlayers().find(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Gracz już istnieje!');return;}
   inp.value='';
   await addDoc(collection(db,'players'),{name,isGoogle:false,createdAt:serverTimestamp()});
 }
@@ -776,9 +783,10 @@ async function removePlayer(id){
 }
 function renderPlayersMgmt(){
   const box=document.getElementById('playersMgmtList');
-  if(!playersCache.length){box.innerHTML='<div class="empty"><div class="empty-icon">👤</div>Brak graczy</div>';return;}
+  const all=allPlayers();
+  if(!all.length){box.innerHTML='<div class="empty"><div class="empty-icon">👤</div>Brak graczy</div>';return;}
   box.innerHTML='';
-  playersCache.forEach(p=>{
+  all.forEach(p=>{
     const el=document.createElement('div');
     el.className='player-check-item';el.style.cursor='default';
     el.innerHTML=`${p.photoURL?`<img src="${p.photoURL}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0" alt="">`:`<div class="p-avatar">${initials(p.name||'')}</div>`}
@@ -1106,7 +1114,7 @@ function renderLb(){
   }
   if(!tours.length){box.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>Brak danych</div>';return;}
   const stats=calcStats(tours);
-  const players=usersCache.filter(u=>stats[u.id]);
+  const players=allPlayers().filter(u=>stats[u.id]);
   if(!players.length){box.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>Brak rozegranych meczów</div>';return;}
   players.sort((a,b)=>(stats[b.id]?.pm||0)-(stats[a.id]?.pm||0));
   const label=lbFilter==='all'?'Wszystkie tryby':lbFilter==='amer'?'Americano':lbFilter==='mex'?'Mexicano':'2v2';
@@ -1194,7 +1202,7 @@ function renderPlayerProfile(uid,screenId,contentId,pushScreen=true){
   html+=`</div></div>`;
 
   // H2H full table
-  const others=usersCache.filter(u=>u.id!==uid&&myH2h[u.id]);
+  const others=allPlayers().filter(u=>u.id!==uid&&myH2h[u.id]);
   if(others.length){
     html+=`<div class="section-card"><div class="section-card-title">Head to Head</div>
       <div style="display:flex;flex-direction:column;gap:8px">`;
