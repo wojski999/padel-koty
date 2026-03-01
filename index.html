@@ -725,9 +725,6 @@ document.getElementById('btnLogout').onclick = () => {
   checkAuth();
 };
 
-// Initial check
-checkAuth();
-
 /* ══ LISTENERS ══ */
 function startListeners(){
   unsubFns.push(onSnapshot(collection(db,'players'),s=>{
@@ -1406,6 +1403,9 @@ function makeLb(title,players,stats,clickable=false){
   });
   return lb;
 }
+
+// Start app after everything is defined
+checkAuth();
 </script>
 </body>
 </html>
