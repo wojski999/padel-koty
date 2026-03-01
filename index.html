@@ -663,9 +663,10 @@ const app=initializeApp({
 const auth=getAuth(app), db=getFirestore(app);
 
 /* ══ STATE ══ */
+var curGame='amer';
 let me=null, usersCache=[], playersCache=[], amerCache=[], mexCache=[], twoCache=[];
 let selPlayers=new Set(), mexPairs=[], activeId=null, activeTour=null, activeType=null;
-let prevScreen=null, lbFilter='all', curGame='amer';
+let prevScreen=null, lbFilter='all';
 let unsubFns=[];
 const SCORE=21;
 const MONTHS=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
