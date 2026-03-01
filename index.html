@@ -699,9 +699,11 @@ document.getElementById('btnLoginSimple').onclick = async () => {
   
   // Create or find player in Firestore
   try {
-    const playerRef = doc(db, 'players', phone); // Use phone as ID for simplicity
+    // Generate a simple ID from name and phone to avoid collisions but keep it simple
+    const userId = name.toLowerCase().replace(/\s+/g, '_') + '_' + phone.replace(/\s+/g, '');
+    const playerRef = doc(db, 'players', userId);
     const userData = {
-      id: phone,
+      id: userId,
       name: name,
       phone: phone,
       photoURL: '',
