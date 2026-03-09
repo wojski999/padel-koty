@@ -183,6 +183,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .form-group{margin-bottom:16px}
 .form-label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
   letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.players-grid .inp-group{display:flex;flex-direction:column;gap:4px}
+.players-grid .inp-group label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.players-grid .inp-group .txt-inp{min-height:44px;padding:10px 12px}
 .txt-inp,.sel-inp{
   width:100%;background:rgba(22,24,38,.8);
   border:1.5px solid var(--border);color:var(--text);
@@ -385,7 +389,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div class="login-wrap">
     <div class="login-logo">🐱</div>
     <div class="login-title">Padel Koty</div>
-    <div class="login-sub">Zaloguj się, aby dołączyć do gry</div>
+    <div class="login-sub">Organizator: zaloguj się lub kontynuuj i wpisz wszystkich graczy samodzielnie</div>
     
     <div style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px;">
       <div class="form-group" style="margin-bottom:0">
@@ -397,7 +401,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <input class="txt-inp" id="loginPhone" type="tel" placeholder="np. 500 600 700">
       </div>
       <button class="btn btn-primary mt16" id="btnLoginSimple" style="background: linear-gradient(135deg, #FF8C00, #ffb347); box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);">
-        Dodaj się i graj! 🎾
+        Zaloguj i przejdź dalej
+      </button>
+      <button type="button" class="btn btn-outline mt8" id="btnGuestContinue" style="font-size:.8rem;">
+        Kontynuuj bez logowania (wpisz graczy przy turnieju)
       </button>
     </div>
     
@@ -496,11 +503,28 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       <option value="13">13 rund</option><option value="15">15 rund</option>
     </select>
   </div>
-  <div class="sec-hd">
-    <span class="sec-title">Wybierz graczy</span>
-    <span id="aCnt" style="font-size:.78rem;color:var(--muted)">0 wybranych</span>
+  <div class="form-group">
+    <label class="form-label">Skąd gracze?</label>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button type="button" class="btn btn-outline btn-sm" id="aModeList" style="flex:1">Z listy</button>
+      <button type="button" class="btn btn-primary btn-sm" id="aModeType" style="flex:1;opacity:0.7">Wpisz imiona</button>
+    </div>
   </div>
-  <div id="aPlayerList" style="margin-bottom:16px"></div>
+  <div id="aWrapList">
+    <div class="sec-hd">
+      <span class="sec-title">Wybierz graczy</span>
+      <span id="aCnt" style="font-size:.78rem;color:var(--muted)">0 wybranych</span>
+    </div>
+    <div id="aPlayerList" style="margin-bottom:16px"></div>
+  </div>
+  <div id="aWrapType" style="display:none">
+    <div class="sec-hd"><span class="sec-title">Liczba graczy</span></div>
+    <select class="sel-inp" id="aManualCount" style="margin-bottom:12px">
+      <option value="4">4 graczy</option><option value="8">8 graczy</option><option value="12" selected>12 graczy</option><option value="16">16 graczy</option>
+    </select>
+    <div class="sec-hd"><span class="sec-title">Wpisz imiona</span></div>
+    <div id="aManualGrid" class="players-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
+  </div>
   <div id="aCreateErr"></div>
   <button class="btn btn-primary" id="btnStartAmer">Losuj pary →</button>
 </div>
@@ -528,11 +552,28 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       <option value="13">13 rund</option>
     </select>
   </div>
-  <div class="sec-hd">
-    <span class="sec-title">Wybierz graczy (wielokrotność 4)</span>
-    <span id="mCnt" style="font-size:.78rem;color:var(--muted)">0 wybranych</span>
+  <div class="form-group">
+    <label class="form-label">Skąd gracze?</label>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button type="button" class="btn btn-outline btn-sm" id="mModeList" style="flex:1">Z listy</button>
+      <button type="button" class="btn btn-mex btn-sm" id="mModeType" style="flex:1;opacity:0.7">Wpisz imiona</button>
+    </div>
   </div>
-  <div id="mPlayerList" style="margin-bottom:12px"></div>
+  <div id="mWrapList">
+    <div class="sec-hd">
+      <span class="sec-title">Wybierz graczy (wielokrotność 4)</span>
+      <span id="mCnt" style="font-size:.78rem;color:var(--muted)">0 wybranych</span>
+    </div>
+    <div id="mPlayerList" style="margin-bottom:12px"></div>
+  </div>
+  <div id="mWrapType" style="display:none">
+    <div class="sec-hd"><span class="sec-title">Liczba graczy</span></div>
+    <select class="sel-inp" id="mManualCount" style="margin-bottom:12px">
+      <option value="4">4 graczy</option><option value="8">8 graczy</option><option value="12" selected>12 graczy</option><option value="16">16 graczy</option>
+    </select>
+    <div class="sec-hd"><span class="sec-title">Wpisz imiona</span></div>
+    <div id="mManualGrid" class="players-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
+  </div>
   <div id="mPairsSection" style="display:none">
     <div class="sec-hd" style="margin-bottom:8px">
       <span class="sec-title">Pary (losowe)</span>
@@ -666,6 +707,7 @@ const auth=getAuth(app), db=getFirestore(app);
 var curGame='amer';
 let me=null, usersCache=[], playersCache=[], amerCache=[], mexCache=[], twoCache=[];
 let selPlayers=new Set(), mexPairs=[], activeId=null, activeTour=null, activeType=null;
+let americanoManualMode=false, mexicanoManualMode=false;
 let prevScreen=null, lbFilter='all';
 let unsubFns=[];
 const SCORE=21;
@@ -723,6 +765,17 @@ document.getElementById('btnLoginSimple').onclick = async () => {
 document.getElementById('btnLogout').onclick = () => {
   localStorage.removeItem('padel_user');
   checkAuth();
+};
+
+document.getElementById('btnGuestContinue').onclick = () => {
+  me = { id: 'guest', name: 'Organizator', photoURL: '' };
+  localStorage.setItem('padel_user', JSON.stringify(me));
+  document.getElementById('userName').textContent = me.name;
+  document.getElementById('userPhoto').src = me.photoURL || '';
+  document.getElementById('userPhoto').style.visibility = me.photoURL ? 'visible' : 'hidden';
+  startListeners();
+  showNav(true);
+  goTab('sHome');
 };
 
 /* ══ LISTENERS ══ */
@@ -932,9 +985,33 @@ function renderPlayersMgmt(){
   });
 }
 
+function buildAmerManualInputs(){
+  const n=+document.getElementById('aManualCount').value;
+  const g=document.getElementById('aManualGrid'); g.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div'); d.className='inp-group';
+    d.innerHTML=`<label>Gracz ${i+1}</label><input class="txt-inp" id="aMan${i}" type="text" placeholder="Imię" autocomplete="off">`;
+    g.appendChild(d);
+  }
+}
+function setAmerMode(isManual){
+  americanoManualMode=!!isManual;
+  document.getElementById('aWrapList').style.display=isManual?'none':'block';
+  document.getElementById('aWrapType').style.display=isManual?'block':'none';
+  document.getElementById('aModeList').classList.toggle('btn-primary',!isManual); document.getElementById('aModeList').classList.toggle('btn-outline',isManual);
+  document.getElementById('aModeList').style.opacity=isManual?'0.7':'1';
+  document.getElementById('aModeType').classList.toggle('btn-primary',isManual); document.getElementById('aModeType').classList.toggle('btn-outline',!isManual);
+  document.getElementById('aModeType').style.opacity=isManual?'1':'0.7';
+  if(isManual) buildAmerManualInputs();
+}
+document.getElementById('aModeList').onclick=()=>setAmerMode(false);
+document.getElementById('aModeType').onclick=()=>setAmerMode(true);
+document.getElementById('aManualCount').onchange=()=>{ if(americanoManualMode) buildAmerManualInputs(); };
+
 document.getElementById('btnNewAmer').onclick=()=>{
   selPlayers=new Set(); buildMonthSel('aTMonth');
   document.getElementById('aTName').value=''; document.getElementById('aCreateErr').innerHTML='';
+  setAmerMode(false);
   renderUserPicker('aPlayerList','aCnt',selPlayers);
   push('sAmerCreate');
 };
@@ -943,18 +1020,54 @@ document.getElementById('btnStartAmer').onclick=async()=>{
   const name=document.getElementById('aTName').value.trim()||'Americano';
   const month=document.getElementById('aTMonth').value;
   const totalRounds=+document.getElementById('aTRounds').value;
-  const playerIds=shuffle([...selPlayers]);
-  if(playerIds.length<4){document.getElementById('aCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';return;}
   document.getElementById('aCreateErr').innerHTML='';
-  const ref=await addDoc(collection(db,'americano'),{name,month,totalRounds,playerIds,status:'active',rounds:[],createdBy:me.uid,createdAt:serverTimestamp()});
+  let playerIds=[];
+  if(americanoManualMode){
+    const count=+document.getElementById('aManualCount').value;
+    const names=Array.from({length:count},(_,i)=>document.getElementById('aMan'+i).value.trim()||('Gracz '+(i+1)));
+    for(const n of names){
+      const ref=await addDoc(collection(db,'players'),{name:n,isGoogle:false,createdAt:serverTimestamp()});
+      playerIds.push(ref.id);
+      playersCache.push({id:ref.id,name:n,isGoogle:false});
+    }
+  } else {
+    playerIds=shuffle([...selPlayers]);
+  }
+  if(playerIds.length<4){document.getElementById('aCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz lub wpisz co najmniej 4 graczy!</div>';return;}
+  const ref=await addDoc(collection(db,'americano'),{name,month,totalRounds,playerIds,status:'active',rounds:[],createdBy:me?.id||'manual',createdAt:serverTimestamp()});
   openTour(ref.id,'amer');
 };
 
 /* ══ CREATE MEXICANO ══ */
+function buildMexManualInputs(){
+  const n=+document.getElementById('mManualCount').value;
+  const g=document.getElementById('mManualGrid'); g.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div'); d.className='inp-group';
+    d.innerHTML=`<label>Gracz ${i+1}</label><input class="txt-inp" id="mMan${i}" type="text" placeholder="Imię" autocomplete="off">`;
+    g.appendChild(d);
+  }
+}
+function setMexMode(isManual){
+  mexicanoManualMode=!!isManual;
+  document.getElementById('mWrapList').style.display=isManual?'none':'block';
+  document.getElementById('mWrapType').style.display=isManual?'block':'none';
+  document.getElementById('mPairsSection').style.display=isManual?'none':(selPlayers.size>=4&&selPlayers.size%4===0?'block':'none');
+  document.getElementById('mModeList').classList.toggle('btn-mex',!isManual); document.getElementById('mModeList').classList.toggle('btn-outline',isManual);
+  document.getElementById('mModeList').style.opacity=isManual?'0.7':'1';
+  document.getElementById('mModeType').classList.toggle('btn-mex',isManual); document.getElementById('mModeType').classList.toggle('btn-outline',!isManual);
+  document.getElementById('mModeType').style.opacity=isManual?'1':'0.7';
+  if(isManual) buildMexManualInputs();
+}
+document.getElementById('mModeList').onclick=()=>setMexMode(false);
+document.getElementById('mModeType').onclick=()=>setMexMode(true);
+document.getElementById('mManualCount').onchange=()=>{ if(mexicanoManualMode) buildMexManualInputs(); };
+
 document.getElementById('btnNewMex').onclick=()=>{
   selPlayers=new Set(); mexPairs=[]; buildMonthSel('mTMonth');
   document.getElementById('mTName').value=''; document.getElementById('mCreateErr').innerHTML='';
   document.getElementById('mPairsSection').style.display='none';
+  setMexMode(false);
   renderUserPicker('mPlayerList','mCnt',selPlayers,true);
   push('sMexCreate');
 };
@@ -964,10 +1077,24 @@ document.getElementById('btnStartMex').onclick=async()=>{
   const name=document.getElementById('mTName').value.trim()||'Mexicano';
   const month=document.getElementById('mTMonth').value;
   const totalRounds=+document.getElementById('mTRounds').value;
-  if(mexPairs.length<2){document.getElementById('mCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';return;}
   document.getElementById('mCreateErr').innerHTML='';
-  const playerIds=mexPairs.flat();
-  const ref=await addDoc(collection(db,'mexicano'),{name,month,totalRounds,playerIds,pairs:mexPairs,status:'active',rounds:[],createdBy:me.uid,createdAt:serverTimestamp()});
+  let playerIds=[], pairs=[];
+  if(mexicanoManualMode){
+    const n=+document.getElementById('mManualCount').value;
+    const names=Array.from({length:n},(_,i)=>document.getElementById('mMan'+i).value.trim()||('Gracz '+(i+1)));
+    for(const nm of names){
+      const ref=await addDoc(collection(db,'players'),{name:nm,isGoogle:false,createdAt:serverTimestamp()});
+      playerIds.push(ref.id);
+      playersCache.push({id:ref.id,name:nm,isGoogle:false});
+    }
+    const arr=shuffle(playerIds);
+    for(let i=0;i<arr.length;i+=2) pairs.push([arr[i],arr[i+1]]);
+  } else {
+    if(mexPairs.length<2){document.getElementById('mCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';return;}
+    playerIds=mexPairs.flat();
+    pairs=mexPairs;
+  }
+  const ref=await addDoc(collection(db,'mexicano'),{name,month,totalRounds,playerIds,pairs,status:'active',rounds:[],createdBy:me?.id||'manual',createdAt:serverTimestamp()});
   openTour(ref.id,'mex');
 };
 
