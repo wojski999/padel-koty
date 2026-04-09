@@ -690,7 +690,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInAnonymously,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const app=initializeApp({
@@ -702,6 +702,7 @@ const app=initializeApp({
   appId:"1:202084399128:web:9115ca5fd18c06e569eb6d"
 });
 const auth=getAuth(app), db=getFirestore(app);
+let fbUser=null;
 
 /* ══ STATE ══ */
 var curGame='amer';
@@ -720,7 +721,6 @@ function checkAuth() {
     me = JSON.parse(savedUser);
     document.getElementById('userPhoto').src = me.photoURL || '';
     document.getElementById('userName').textContent = me.name.split(' ')[0];
-    startListeners();
     showNav(true);
     goTab('sHome');
   } else {
@@ -842,12 +842,26 @@ function pop(){if(prevScreen)show(prevScreen);else goTab('sHome');}
 function showNav(v){document.getElementById('bottomNav').classList.toggle('show',v);}
 function isActive(id){return document.getElementById(id).classList.contains('active');}
 function ts(t){return t.createdAt?.seconds||0;}
-function userId(){return me?.id||me?.uid||'manual';}
+function userId(){return fbUser?.uid||me?.id||me?.uid||'manual';}
 function errMsg(e){
   const m=(e&&e.message)?e.message:String(e||'Nieznany błąd');
   if(m.includes('Missing or insufficient permissions')) return 'Brak uprawnień do zapisu danych. Zaloguj się lub sprawdź reguły Firestore.';
   return m;
 }
+
+// Ensure Firestore writes have request.auth (common rules requirement)
+onAuthStateChanged(auth, async (u) => {
+  fbUser = u || null;
+  // Start Firestore listeners only when a "local" user exists
+  // and Firebase Auth is ready (anonymous or real user).
+  if (localStorage.getItem('padel_user')) {
+    stopListeners();
+    startListeners();
+  }
+  if (!u) {
+    try { await signInAnonymously(auth); } catch (_) {}
+  }
+});
 
 /* ══ NAV TABS ══ */
 document.querySelectorAll('.nav-tab').forEach(btn=>{
