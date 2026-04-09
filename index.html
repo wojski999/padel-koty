@@ -842,6 +842,12 @@ function pop(){if(prevScreen)show(prevScreen);else goTab('sHome');}
 function showNav(v){document.getElementById('bottomNav').classList.toggle('show',v);}
 function isActive(id){return document.getElementById(id).classList.contains('active');}
 function ts(t){return t.createdAt?.seconds||0;}
+function userId(){return me?.id||me?.uid||'manual';}
+function errMsg(e){
+  const m=(e&&e.message)?e.message:String(e||'Nieznany błąd');
+  if(m.includes('Missing or insufficient permissions')) return 'Brak uprawnień do zapisu danych. Zaloguj się lub sprawdź reguły Firestore.';
+  return m;
+}
 
 /* ══ NAV TABS ══ */
 document.querySelectorAll('.nav-tab').forEach(btn=>{
@@ -962,11 +968,19 @@ async function addPlayerManual(){
   const name=inp.value.trim(); if(!name)return;
   if(allPlayers().find(p=>p.name.toLowerCase()===name.toLowerCase())){alert('Gracz już istnieje!');return;}
   inp.value='';
-  await addDoc(collection(db,'players'),{name,isGoogle:false,createdAt:serverTimestamp()});
+  try{
+    await addDoc(collection(db,'players'),{name,isGoogle:false,createdAt:serverTimestamp()});
+  }catch(e){
+    alert('Nie udało się dodać gracza: '+errMsg(e));
+  }
 }
 async function removePlayer(id){
   if(!confirm('Usunąć gracza?'))return;
-  await deleteDoc(doc(db,'players',id));
+  try{
+    await deleteDoc(doc(db,'players',id));
+  }catch(e){
+    alert('Nie udało się usunąć gracza: '+errMsg(e));
+  }
 }
 function renderPlayersMgmt(){
   const box=document.getElementById('playersMgmtList');
@@ -1021,21 +1035,25 @@ document.getElementById('btnStartAmer').onclick=async()=>{
   const month=document.getElementById('aTMonth').value;
   const totalRounds=+document.getElementById('aTRounds').value;
   document.getElementById('aCreateErr').innerHTML='';
-  let playerIds=[];
-  if(americanoManualMode){
-    const count=+document.getElementById('aManualCount').value;
-    const names=Array.from({length:count},(_,i)=>document.getElementById('aMan'+i).value.trim()||('Gracz '+(i+1)));
-    for(const n of names){
-      const ref=await addDoc(collection(db,'players'),{name:n,isGoogle:false,createdAt:serverTimestamp()});
-      playerIds.push(ref.id);
-      playersCache.push({id:ref.id,name:n,isGoogle:false});
+  try{
+    let playerIds=[];
+    if(americanoManualMode){
+      const count=+document.getElementById('aManualCount').value;
+      const names=Array.from({length:count},(_,i)=>document.getElementById('aMan'+i).value.trim()||('Gracz '+(i+1)));
+      for(const n of names){
+        const ref=await addDoc(collection(db,'players'),{name:n,isGoogle:false,createdAt:serverTimestamp()});
+        playerIds.push(ref.id);
+        playersCache.push({id:ref.id,name:n,isGoogle:false});
+      }
+    } else {
+      playerIds=shuffle([...selPlayers]);
     }
-  } else {
-    playerIds=shuffle([...selPlayers]);
+    if(playerIds.length<4){document.getElementById('aCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz lub wpisz co najmniej 4 graczy!</div>';return;}
+    const ref=await addDoc(collection(db,'americano'),{name,month,totalRounds,playerIds,status:'active',rounds:[],createdBy:userId(),createdAt:serverTimestamp()});
+    openTour(ref.id,'amer');
+  }catch(e){
+    document.getElementById('aCreateErr').innerHTML=`<div class="inline-err">⚠ ${errMsg(e)}</div>`;
   }
-  if(playerIds.length<4){document.getElementById('aCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz lub wpisz co najmniej 4 graczy!</div>';return;}
-  const ref=await addDoc(collection(db,'americano'),{name,month,totalRounds,playerIds,status:'active',rounds:[],createdBy:me?.id||'manual',createdAt:serverTimestamp()});
-  openTour(ref.id,'amer');
 };
 
 /* ══ CREATE MEXICANO ══ */
@@ -1078,24 +1096,28 @@ document.getElementById('btnStartMex').onclick=async()=>{
   const month=document.getElementById('mTMonth').value;
   const totalRounds=+document.getElementById('mTRounds').value;
   document.getElementById('mCreateErr').innerHTML='';
-  let playerIds=[], pairs=[];
-  if(mexicanoManualMode){
-    const n=+document.getElementById('mManualCount').value;
-    const names=Array.from({length:n},(_,i)=>document.getElementById('mMan'+i).value.trim()||('Gracz '+(i+1)));
-    for(const nm of names){
-      const ref=await addDoc(collection(db,'players'),{name:nm,isGoogle:false,createdAt:serverTimestamp()});
-      playerIds.push(ref.id);
-      playersCache.push({id:ref.id,name:nm,isGoogle:false});
+  try{
+    let playerIds=[], pairs=[];
+    if(mexicanoManualMode){
+      const n=+document.getElementById('mManualCount').value;
+      const names=Array.from({length:n},(_,i)=>document.getElementById('mMan'+i).value.trim()||('Gracz '+(i+1)));
+      for(const nm of names){
+        const ref=await addDoc(collection(db,'players'),{name:nm,isGoogle:false,createdAt:serverTimestamp()});
+        playerIds.push(ref.id);
+        playersCache.push({id:ref.id,name:nm,isGoogle:false});
+      }
+      const arr=shuffle(playerIds);
+      for(let i=0;i<arr.length;i+=2) pairs.push([arr[i],arr[i+1]]);
+    } else {
+      if(mexPairs.length<2){document.getElementById('mCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';return;}
+      playerIds=mexPairs.flat();
+      pairs=mexPairs;
     }
-    const arr=shuffle(playerIds);
-    for(let i=0;i<arr.length;i+=2) pairs.push([arr[i],arr[i+1]]);
-  } else {
-    if(mexPairs.length<2){document.getElementById('mCreateErr').innerHTML='<div class="inline-err">⚠ Wybierz co najmniej 4 graczy!</div>';return;}
-    playerIds=mexPairs.flat();
-    pairs=mexPairs;
+    const ref=await addDoc(collection(db,'mexicano'),{name,month,totalRounds,playerIds,pairs,status:'active',rounds:[],createdBy:userId(),createdAt:serverTimestamp()});
+    openTour(ref.id,'mex');
+  }catch(e){
+    document.getElementById('mCreateErr').innerHTML=`<div class="inline-err">⚠ ${errMsg(e)}</div>`;
   }
-  const ref=await addDoc(collection(db,'mexicano'),{name,month,totalRounds,playerIds,pairs,status:'active',rounds:[],createdBy:me?.id||'manual',createdAt:serverTimestamp()});
-  openTour(ref.id,'mex');
 };
 
 function updateMexPairs(){
@@ -1145,12 +1167,16 @@ document.getElementById('btnSave2v2').onclick=async()=>{
         s2=parseInt(document.getElementById('twoScore2').value);
   if(isNaN(s1)||isNaN(s2)){document.getElementById('twoCreateErr').innerHTML='<div class="inline-err">⚠ Wpisz wynik!</div>';return;}
   document.getElementById('twoCreateErr').innerHTML='';
-  await addDoc(collection(db,'matches2v2'),{
-    team1:arr.slice(0,2),team2:arr.slice(2,4),score1:s1,score2:s2,
-    note:document.getElementById('twoNote').value.trim(),
-    createdBy:me.uid,createdAt:serverTimestamp()
-  });
-  switchGame('2v2');goTab('sHome');
+  try{
+    await addDoc(collection(db,'matches2v2'),{
+      team1:arr.slice(0,2),team2:arr.slice(2,4),score1:s1,score2:s2,
+      note:document.getElementById('twoNote').value.trim(),
+      createdBy:userId(),createdAt:serverTimestamp()
+    });
+    switchGame('2v2');goTab('sHome');
+  }catch(e){
+    document.getElementById('twoCreateErr').innerHTML=`<div class="inline-err">⚠ ${errMsg(e)}</div>`;
+  }
 };
 
 /* ══ OPEN TOURNAMENT ══ */
@@ -1262,19 +1288,28 @@ document.getElementById('btnNextRound').onclick=async()=>{
   const newRounds=[...(activeTour.rounds||[]),{roundNum:(activeTour.rounds||[]).length+1,matches}];
   const newStatus=newRounds.length>=activeTour.totalRounds?'finished':'active';
   document.getElementById('btnNextRound').disabled=true;
-  const col=activeType==='mex'?'mexicano':'americano';
-  await updateDoc(doc(db,col,activeId),{rounds:newRounds,status:newStatus});
-  document.getElementById('btnNextRound').disabled=false;
-  const updated={...activeTour,rounds:newRounds,status:newStatus};
-  if(newStatus==='finished') showResults(updated,activeType);
-  else{loadRound(updated,activeType);window.scrollTo({top:0,behavior:'smooth'});}
+  try{
+    const col=activeType==='mex'?'mexicano':'americano';
+    await updateDoc(doc(db,col,activeId),{rounds:newRounds,status:newStatus});
+    const updated={...activeTour,rounds:newRounds,status:newStatus};
+    if(newStatus==='finished') showResults(updated,activeType);
+    else{loadRound(updated,activeType);window.scrollTo({top:0,behavior:'smooth'});}
+  }catch(e){
+    document.getElementById('playErr').innerHTML=`<div class="inline-err">⚠ ${errMsg(e)}</div>`;
+  }finally{
+    document.getElementById('btnNextRound').disabled=false;
+  }
 };
 
 document.getElementById('btnFinishEarly').onclick=async()=>{
   if(!confirm('Zakończyć turniej?'))return;
-  const col=activeType==='mex'?'mexicano':'americano';
-  await updateDoc(doc(db,col,activeId),{status:'finished'});
-  showResults({...activeTour,status:'finished'},activeType);
+  try{
+    const col=activeType==='mex'?'mexicano':'americano';
+    await updateDoc(doc(db,col,activeId),{status:'finished'});
+    showResults({...activeTour,status:'finished'},activeType);
+  }catch(e){
+    document.getElementById('playErr').innerHTML=`<div class="inline-err">⚠ ${errMsg(e)}</div>`;
+  }
 };
 
 document.getElementById('btnStandings').onclick=()=>{
@@ -1383,7 +1418,7 @@ function renderLb(){
 }
 
 /* ══ MY PROFILE ══ */
-function renderMyProfile(){if(me)renderPlayerProfile(me.uid,'sProfile','profileContent',false);}
+function renderMyProfile(){if(me)renderPlayerProfile(userId(),'sProfile','profileContent',false);}
 document.getElementById('userInfoBtn').onclick=()=>{renderMyProfile();goTab('sProfile');};
 
 /* ══ PLAYER PROFILE ══ */
@@ -1411,7 +1446,7 @@ function renderPlayerProfile(uid,screenId,contentId,pushScreen=true){
     <div class="profile-header">
       ${user.photoURL?`<img class="profile-photo" src="${user.photoURL}" alt="">`:`<div class="profile-photo-placeholder">${initials(user.name||'')}</div>`}
       <div class="profile-name">${user.name||user.email||'Gracz'}</div>
-      ${uid===me?.uid?`<div class="profile-email">${user.email||''}</div>`:''}
+      ${uid===userId()?`<div class="profile-email">${user.email||''}</div>`:''}
       <div class="stats-grid">
         <div class="stat-box"><div class="stat-val">${s.w}</div><div class="stat-lbl">Wygrane</div></div>
         <div class="stat-box"><div class="stat-val">${s.l}</div><div class="stat-lbl">Przegrane</div></div>
